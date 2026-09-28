@@ -189,7 +189,7 @@ function Tasks() {
 
   const formatDate = (date) => {
     if (!date) {
-      return "—";
+      return "â€”";
     }
 
     return new Date(date).toLocaleDateString("en-US");

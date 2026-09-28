@@ -390,11 +390,11 @@ function Products() {
                     </td>
 
                     <td>
-                      {product.sku || "—"}
+                      {product.sku || "â€”"}
                     </td>
 
                     <td>
-                      {product.category || "—"}
+                      {product.category || "â€”"}
                     </td>
 
                     <td>
