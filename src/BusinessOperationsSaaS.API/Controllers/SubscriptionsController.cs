@@ -1,14 +1,11 @@
-using System.Security.Claims;
 using BusinessOperationsSaaS.Application.Subscriptions.DTOs;
 using BusinessOperationsSaaS.Application.Subscriptions.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BusinessOperationsSaaS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class SubscriptionsController : ControllerBase
 {
     private readonly ISubscriptionService _subscriptionService;
@@ -23,7 +20,6 @@ public class SubscriptionsController : ControllerBase
     }
 
     [HttpGet("plans")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetPlans()
     {
         var plans = await _subscriptionService.GetPlansAsync();
@@ -32,7 +28,6 @@ public class SubscriptionsController : ControllerBase
     }
 
     [HttpGet("plans/{id:guid}")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetPlanById(Guid id)
     {
         var plan = await _subscriptionService.GetPlanByIdAsync(id);
@@ -51,19 +46,13 @@ public class SubscriptionsController : ControllerBase
     [HttpGet("current")]
     public async Task<IActionResult> GetCurrentSubscription()
     {
-        var companyId = GetCompanyId();
+        var companyId = PublicCompanyId;
 
-        if (companyId is null)
-        {
-            return Unauthorized(new
-            {
-                message = "Company ID not found in token."
-            });
-        }
+        
 
         var subscription =
             await _subscriptionService.GetCurrentSubscriptionAsync(
-                companyId.Value);
+                companyId);
 
         if (subscription is null)
         {
@@ -80,19 +69,13 @@ public class SubscriptionsController : ControllerBase
     public async Task<IActionResult> CreateSubscription(
         [FromBody] CreateSubscriptionDto dto)
     {
-        var companyId = GetCompanyId();
+        var companyId = PublicCompanyId;
 
-        if (companyId is null)
-        {
-            return Unauthorized(new
-            {
-                message = "Company ID not found in token."
-            });
-        }
+        
 
         var subscription =
             await _subscriptionService.CreateSubscriptionAsync(
-                companyId.Value,
+                companyId,
                 dto);
 
         if (subscription is null)
@@ -115,21 +98,15 @@ public class SubscriptionsController : ControllerBase
     public async Task<IActionResult> CreateCheckout(
         [FromBody] CreateSubscriptionDto dto)
     {
-        var companyId = GetCompanyId();
+        var companyId = PublicCompanyId;
 
-        if (companyId is null)
-        {
-            return Unauthorized(new
-            {
-                message = "Company ID not found in token."
-            });
-        }
+        
 
         try
         {
             var checkoutUrl =
                 await _stripeService.CreateCheckoutSessionAsync(
-                    companyId.Value,
+                    companyId,
                     dto.SubscriptionPlanId);
 
             return Ok(new
@@ -151,19 +128,13 @@ public class SubscriptionsController : ControllerBase
         Guid id,
         [FromBody] UpdateSubscriptionDto dto)
     {
-        var companyId = GetCompanyId();
+        var companyId = PublicCompanyId;
 
-        if (companyId is null)
-        {
-            return Unauthorized(new
-            {
-                message = "Company ID not found in token."
-            });
-        }
+        
 
         var subscription =
             await _subscriptionService.UpdateSubscriptionAsync(
-                companyId.Value,
+                companyId,
                 id,
                 dto);
 
@@ -178,17 +149,6 @@ public class SubscriptionsController : ControllerBase
         return Ok(subscription);
     }
 
-    private Guid? GetCompanyId()
-    {
-        var companyIdClaim =
-            User.FindFirst("companyId")?.Value ??
-            User.FindFirst(ClaimTypes.GroupSid)?.Value;
-
-        if (Guid.TryParse(companyIdClaim, out var companyId))
-        {
-            return companyId;
-        }
-
-        return null;
-    }
+    private static readonly Guid PublicCompanyId = Guid.Parse("feb88165-b70c-429e-83a3-94d412dca312");
 }
+

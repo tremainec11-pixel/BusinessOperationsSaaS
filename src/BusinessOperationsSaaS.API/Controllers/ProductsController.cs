@@ -1,14 +1,11 @@
-using System.Security.Claims;
 using BusinessOperationsSaaS.Application.Products.DTOs;
 using BusinessOperationsSaaS.Application.Products.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BusinessOperationsSaaS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
@@ -21,17 +18,11 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<ProductResponse>>> GetAll()
     {
-        var companyId = GetCompanyId();
+        var companyId = PublicCompanyId;
 
-        if (companyId is null)
-        {
-            return Unauthorized(new
-            {
-                message = "Company information is missing from the token."
-            });
-        }
+        
 
-        var products = await _productService.GetAllAsync(companyId.Value);
+        var products = await _productService.GetAllAsync(companyId);
 
         return Ok(products);
     }
@@ -39,18 +30,12 @@ public class ProductsController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ProductResponse>> GetById(Guid id)
     {
-        var companyId = GetCompanyId();
+        var companyId = PublicCompanyId;
 
-        if (companyId is null)
-        {
-            return Unauthorized(new
-            {
-                message = "Company information is missing from the token."
-            });
-        }
+        
 
         var product = await _productService.GetByIdAsync(
-            companyId.Value,
+            companyId,
             id);
 
         if (product is null)
@@ -68,20 +53,14 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<ProductResponse>> Create(
         CreateProductRequest request)
     {
-        var companyId = GetCompanyId();
+        var companyId = PublicCompanyId;
 
-        if (companyId is null)
-        {
-            return Unauthorized(new
-            {
-                message = "Company information is missing from the token."
-            });
-        }
+        
 
         try
         {
             var product = await _productService.CreateAsync(
-                companyId.Value,
+                companyId,
                 request);
 
             return CreatedAtAction(
@@ -103,20 +82,14 @@ public class ProductsController : ControllerBase
         Guid id,
         UpdateProductRequest request)
     {
-        var companyId = GetCompanyId();
+        var companyId = PublicCompanyId;
 
-        if (companyId is null)
-        {
-            return Unauthorized(new
-            {
-                message = "Company information is missing from the token."
-            });
-        }
+        
 
         try
         {
             var product = await _productService.UpdateAsync(
-                companyId.Value,
+                companyId,
                 id,
                 request);
 
@@ -142,18 +115,12 @@ public class ProductsController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var companyId = GetCompanyId();
+        var companyId = PublicCompanyId;
 
-        if (companyId is null)
-        {
-            return Unauthorized(new
-            {
-                message = "Company information is missing from the token."
-            });
-        }
+        
 
         var deleted = await _productService.DeleteAsync(
-            companyId.Value,
+            companyId,
             id);
 
         if (!deleted)
@@ -167,15 +134,5 @@ public class ProductsController : ControllerBase
         return NoContent();
     }
 
-    private Guid? GetCompanyId()
-    {
-        var companyIdClaim = User.FindFirst("companyId")?.Value;
-
-        if (Guid.TryParse(companyIdClaim, out var companyId))
-        {
-            return companyId;
-        }
-
-        return null;
-    }
+    private static readonly Guid PublicCompanyId = Guid.Parse("feb88165-b70c-429e-83a3-94d412dca312");
 }

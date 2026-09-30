@@ -45,7 +45,14 @@ builder.Services.AddCors(options =>
 });
 
 builder.Configuration.AddUserSecrets<Program>(optional: true);
+var neonConnectionString =
+    Environment.GetEnvironmentVariable("NEON_CONNECTION_STRING");
 
+if (!string.IsNullOrWhiteSpace(neonConnectionString))
+{
+    builder.Configuration["ConnectionStrings:DefaultConnection"] =
+        neonConnectionString;
+}
 var configuredJwtKey = builder.Configuration["JwtSettings:Key"];
 
 Console.WriteLine(

@@ -1,17 +1,18 @@
-using System.Security.Claims;
 using BusinessOperationsSaaS.Application.Dashboard.DTOs;
 using BusinessOperationsSaaS.Application.Dashboard.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BusinessOperationsSaaS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class DashboardController : ControllerBase
 {
     private readonly IDashboardService _dashboardService;
+
+    // Public company context
+    private static readonly Guid PublicCompanyId =
+        Guid.Parse("feb88165-b70c-429e-83a3-94d412dca312");
 
     public DashboardController(IDashboardService dashboardService)
     {
@@ -21,18 +22,8 @@ public class DashboardController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<DashboardResponse>> GetDashboard()
     {
-        var companyIdClaim = User.FindFirst("companyId")?.Value;
-
-        if (!Guid.TryParse(companyIdClaim, out var companyId))
-        {
-            return Unauthorized(new
-            {
-                message = "Company information is missing from the token."
-            });
-        }
-
         var dashboard = await _dashboardService.GetDashboardAsync(
-            companyId);
+            PublicCompanyId);
 
         return Ok(dashboard);
     }

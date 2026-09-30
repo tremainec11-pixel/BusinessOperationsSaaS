@@ -1,5 +1,4 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import {
   LayoutDashboard,
   Users,
@@ -10,8 +9,6 @@ import {
 } from "lucide-react";
 
 function MainLayout() {
-  const { user, logout } = useAuth();
-
   const menuItems = [
     {
       label: "Dashboard",
@@ -62,7 +59,7 @@ function MainLayout() {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
+                  isActive ? "nav-linkactive" : "nav-link"
                 }
               >
                 <Icon size={18} strokeWidth={2} />
@@ -71,22 +68,6 @@ function MainLayout() {
             );
           })}
         </nav>
-
-        <div className="sidebar-footer">
-          <div className="user-info">
-            <strong>
-              {user?.firstName} {user?.lastName}
-            </strong>
-            <span>{user?.role}</span>
-          </div>
-
-          <button
-            onClick={logout}
-            className="logout-button"
-          >
-            Logout
-          </button>
-        </div>
       </aside>
 
       <main className="main-content">

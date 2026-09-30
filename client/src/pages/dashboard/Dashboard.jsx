@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 import "./Dashboard.css";
-import { useAuth } from "../../context/AuthContext";
 import { getDashboard } from "../../services/dashboardService";
 
 function Dashboard() {
-  const { user } = useAuth();
-
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -54,12 +51,8 @@ function Dashboard() {
         <div>
           <h1>Dashboard</h1>
           <p>
-            Welcome back, {user?.firstName} {user?.lastName}
+            Welcome to BusinessOps SaaS
           </p>
-        </div>
-
-        <div className="role-badge">
-          {user?.role}
         </div>
       </header>
 
@@ -150,7 +143,7 @@ function Dashboard() {
             </strong>
           </div>
 
-          <div className="overview-row balance-row">
+          <div className="overview-rowbalance-row">
             <span>Balance</span>
             <strong>
               ${Number(dashboard.balance).toLocaleString(
